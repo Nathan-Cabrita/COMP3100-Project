@@ -9,7 +9,7 @@ public class Client{
             boolean scanning = true;
             while(scanning){
                 try {
-                    scheduler = new Scheduler(new Socket("127.0.0.1", 2222));
+                    scheduler = new Scheduler(new Socket("127.0.0.1", 50000));
                     scanning = false;
                 } catch (ConnectException e) {
                     try {
@@ -24,7 +24,7 @@ public class Client{
 
             scheduler.wakeUp();
             //comp3100 folder must be in the same folder as ds-sim
-            Parser parser = new Parser("ds-sim/system.xml");
+            Parser parser = new Parser("system.xml");
             scheduler.allToLargest(parser.servers);
             scheduler.writeToStream("QUIT");
 
