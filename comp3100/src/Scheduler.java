@@ -44,9 +44,41 @@ public class Scheduler {
         }
     }
 
-    public void firstFit(ArrayList<Server> servers) { // servers is a list of servers from system.xml
-        // paste first fit code here
-    }
+    public void firstFit(ArrayList<Server> servers){
+        //Gets first message after auth to initialize msg
+        String msg = readFromStream();
+
+        ServerInfo server = null;
+        Job job = null;
+        
+
+        //Loop until no jobs left: NONE recieved
+        while(!getCommand(msg).equals("NONE")){
+            //Send REDY when server sends OK: is ready for next job
+            if(getCommand(msg).equals("OK"))
+                redy();
+            
+          //Send SCHD when server sends JOBN or JOBP: Schedule a job when one is recieved
+            if(getCommand(msg).equals("JOBN") || getCommand(msg).equals("JOBP")){
+                //Takes JOBN command and splits data into fields of a job object
+                job = getJob(msg);
+
+                ServerInfo firstFit = new ServerInfo();
+               
+                rescCapable(job.cores, job.memory, job.disk);
+                msg = readFromStream();
+                    
+                if(getCommand(msg).equals("DATA")){
+                    ok();
+            }
+            }
+        
+        if(!firstFit.type.equals("empty"))
+            schd(job.id, firstFit.type, firstFit.id);
+        
+        // Get next message for loop
+        msg=readFromStream();
+}
 
     public void bestFit(ArrayList<Server> servers) { // servers is a list of servers from system.xml
         // paste best fit code here
