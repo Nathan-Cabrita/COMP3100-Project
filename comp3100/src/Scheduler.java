@@ -95,6 +95,76 @@ public class Scheduler{
         }
     }
 
+    public void bestFit(ArrayList<Server> servers){
+        //Gets first message after auth to initialize msg
+        String msg = readFromStream();
+
+        ServerInfo server = null;
+        Job job = null;
+        
+
+
+        //vlaues to track best fit an minavial
+        int fitnessValue = Integer.MAX_VALUE;
+        int minAvail = Integer.MAX_VALUE;
+        
+        //Loop until no jobs left: NONE recieved
+        while(!getCommand(msg).equals("NONE")){
+            //Send REDY when server sends OK: is ready for next job
+            if(getCommand(msg).equals("OK"))
+                redy();
+
+                msg = readFromStream();
+            //Send SCHD when server sends JOBN or JOBP: Schedule a job when one is recieved
+            if(getCommand(msg).equals("JOBN") || getCommand(msg).equals("JOBP")){
+                job = getJob(msg); // get the job info
+
+                //serverinfo object tot server
+                ServerInfo bestFit = new ServerInfo();
+                //serverinfo object to track default server
+                ServerInfo defaultFit = new ServerInfo();
+
+                
+                
+
+                rescCapable(job.cores, job.memory, job.disk);
+                msg = readFromStream();
+
+                if(getCommand(msg).equals("DATA")){
+                    ok();
+                    msg = readFromStream();
+                    if(!getCommand(msg).equals("."))
+                        defaultFit = getServerInfo(msg);
+
+                    while(!getCommand(msg).equals(".")){
+                        ServerInfo temp = getServerInfo(msg);
+                        //Check if valid server
+                        if(Integer.parseInt(temp.state) < 4){
+                            server = getServerInfo(msg);
+                            int tempFit = Integer.parseInt(server.coreCount) - Integer.parseInt(job.cores);
+                            //checks to see if server is in correct state
+                            if((Integer.parseInt(server.state) == 3 || Integer.parseInt(server.state) == 2) && Integer.parseInt(server.coreCount) > 0){
+                                if(tempFit < fitnessValue || (tempFit == fitnessValue && Integer.parseInt(server.availableTime) < minAvail)){
+                                    bestFit = new ServerInfo(server.type, server.id, server.state, server.availableTime, server.coreCount, server.memory, server.disk);
+                                    fitnessValue = tempFit;
+                                    minAvail = Integer.parseInt(server.availableTime);
+                                }
+                            }
+                            ok();
+                            msg = readFromStream();
+                        }
+                    }
+                    if(!bestFit.type.equals("empty"))
+                        schd(job.id, bestFit.type, bestFit.id);
+                    else
+                        schd(job.id, defaultFit.type, defaultFit.id);
+                }
+                msg = readFromStream();
+            }
+        }
+    }
+
+
 
     //HELPER METHODS
     //ALL COMMANDS CAN BE FOUND HERE

@@ -60,7 +60,7 @@ public class Client{
             else if(method.equals("ff"))
                 scheduler.allToLargest(parser.servers);
             else
-                scheduler.scheduleFirst();
+                scheduler.bestFit(parser.servers);
 
             scheduler.writeToStream("QUIT");
 
