@@ -14,6 +14,16 @@ public class ServerInfo{
         this.disk = disk;
     }
 
+    public ServerInfo(){
+        type = "empty";
+        id = "0";
+        state = "0";
+        availableTime = "0";
+        coreCount = "-500";
+        memory = "0";
+        disk = "0";
+    }
+
     public String toString(){
         return("Server - Type: " + this.type + " ID: " + this.id + " State: " + this.state + " Available Time: " + this.availableTime + " Core Count: " + this.coreCount + " Memory: " + this.memory + " Disk: " + this.disk);
     }
