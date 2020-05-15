@@ -53,8 +53,8 @@ public class Client{
             Parser parser = new Parser("../ds-sim/system.xml");
 
             //if run from ide with no command, runs code under last else
-            if(method.equals("ff"))
-                scheduler.allToLargest(parser.servers);
+            if(method.equals("bf"))
+                scheduler.bestFit(parser.servers);
             else if(method.equals("ff"))
                 scheduler.allToLargest(parser.servers);
             else if(method.equals("ff"))
