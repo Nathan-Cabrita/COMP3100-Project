@@ -135,7 +135,7 @@ public class Scheduler{
                 if(getCommand(msg).equals("DATA")){
                     writeToStream("OK");
                     msg = readFromStream();
-                    System.out.println(msg);
+                    
                     if(!getCommand(msg).equals("."))
                         defaultFit = getServerInfo(msg);
                     ok();
@@ -143,26 +143,23 @@ public class Scheduler{
 
                     while(!msg.startsWith(".")){
                         
-                        ServerInfo temp = getServerInfo(msg);
+                        server = getServerInfo(msg);
+                        System.out.println(msg);
                         //Check if valid server
-                        if(Integer.parseInt(temp.state) < 4){
-                            server = getServerInfo(msg);
+                        if(Integer.parseInt(server.state) < 4 && Integer.parseInt(server.coreCount) > 0){                 
                             int tempFit = Integer.parseInt(job.cores) -Integer.parseInt(server.coreCount);
                             //checks to see if server is in correct state
-                            if(tempFit>= 0){
-                            if(Integer.parseInt(server.state) <= 3  && Integer.parseInt(server.coreCount) > 0){
-                                if(tempFit < fitnessValue || (tempFit == fitnessValue && Integer.parseInt(server.availableTime) < minAvail)){
+                            if(tempFit>= 0){   
+                                if(tempFit < fitnessValue || (tempFit == fitnessValue && Integer.parseInt(server.availableTime) < minAvail && Integer.parseInt(server.availableTime) > -1)){
                                     bestFit = new ServerInfo(server.type, server.id, server.state, server.availableTime, server.coreCount, server.memory, server.disk);
                                     fitnessValue = tempFit;
                                     minAvail = Integer.parseInt(server.availableTime);
                                 }
                             }
-                            }
                             ok();
                             msg = readFromStream();
                             
-                        }
-                        
+                        }  
                     }
                     if(!bestFit.type.equals("empty"))
                         schd(job.id, bestFit.type, bestFit.id);
