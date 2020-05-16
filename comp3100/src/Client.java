@@ -55,12 +55,12 @@ public class Client{
             //if run from ide with no command, runs code under last else
             if(method.equals("ff"))
                 scheduler.firstFit(parser.servers);
-            else if(method.equals("ff"))
+            else if(method.equals("bf"))
                 scheduler.bestFit(parser.servers);
-            else if(method.equals("ff"))
+            else if(method.equals("wf"))
                 scheduler.worstFit(parser.servers);
             else
-                scheduler.allToLargest(parser.servers); //change this to you algorithm to run easier
+                scheduler.allToLargest(parser.servers); //change this to your algorithm to run easier
 
             scheduler.writeToStream("QUIT");
 
