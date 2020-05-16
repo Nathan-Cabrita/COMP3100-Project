@@ -14,5 +14,8 @@ This program accepts two argument types. **java Client -a <algorithm>** will run
 
 ## Job Scheduling Functions
 
-Currently the only available job scheduling function is allToLargest, which sends all jobs from the server to the largest server type.
+All To Largest (atl) - Schedules all jobs to the largest server
+First Fit (ff) - Schedules jobs to the first available server with sufficient resources
+Best Fit (bf) - Schedules jobs to the best fit server with available resources
+Worst Fit (wf) - Schedules jobs to the worst fit server with available resources
 
