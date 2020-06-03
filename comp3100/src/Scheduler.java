@@ -95,18 +95,61 @@ public class Scheduler{
         }
     }
 
+    public ArrayList<ServerInfo> getServers(String cores, String memory, String disk){
+        ArrayList<ServerInfo> servers = new ArrayList<ServerInfo>();
+        String msg;
+
+        //command to see what servers are available
+        rescAvail(cores, memory, disk);
+        msg = readFromStream();
+
+        if(getCommand(msg).equals("DATA")){
+            ok();
+            msg = readFromStream();
+            while(!msg.startsWith(".")){
+                servers.add(getServerInfo(msg));
+                ok();
+                msg = readFromStream();  
+            }
+        }
+
+        return servers;
+    }
+
+
+    public void newAlgo(ArrayList<ServerInfo> servers){
+        
+
+
+        //shcd
+        //read
+    }
+
+    public void runAlgo(){
+        String msg = "abcd";
+        Job job = null;
+    
+        wakeUp();
+        
+        while(!getCommand(msg).equals("NONE")){
+            redy();
+            msg = readFromStream();
+            if(getCommand(msg).equals("JOBN")){
+                job = getJob(msg);
+                newAlgo(getServers(job.cores, job.memory, job.disk));
+            }
+        }
+    }
+
+
+
     public void bestFit(ArrayList<Server> servers){
         //Gets first message after auth to initialize msg
         String msg = readFromStream();
 
         ServerInfo server = null;
         
-        
-
-
         //vlaues to track best fit an minavial
-        
-
         
         
         //Loop until no jobs left: NONE recieved
@@ -315,6 +358,8 @@ public class Scheduler{
         readFromStream();
         //comp335 makes the test file work
         auth("comp335");
+        readFromStream();
+        
     }
 
     public void redy(){

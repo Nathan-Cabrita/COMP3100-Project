@@ -48,7 +48,7 @@ public class Client{
             
             System.out.println("Connected");
 
-            scheduler.wakeUp();
+            //TODO scheduler.wakeUp();
             //comp3100 folder must be in the same folder as ds-sim
             Parser parser = new Parser("../ds-sim/system.xml");
 
@@ -60,7 +60,7 @@ public class Client{
             else if(method.equals("ff"))
                 scheduler.allToLargest(parser.servers);
             else
-                scheduler.bestFit(parser.servers);
+                scheduler.runAlgo();
 
             scheduler.writeToStream("QUIT");
 
