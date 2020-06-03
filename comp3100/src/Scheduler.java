@@ -1,5 +1,6 @@
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
 import java.io.*;
 import Config.*;
@@ -135,16 +136,18 @@ public class Scheduler{
                 //find the right server
                 schedule = newAlgo(serverType, inUse, job);
 
-                //check to see if server is already in use if not add it to list
-                //TODO check by server ID not contains
+                
                 for(ServerInfo current: inUse){
+                    //check to see if scheduled server is already in use. if so update it
                     if(schedule.id.equals(current.id)){
-                        
+                        inUse.set(inUse.indexOf(current), schedule);   
                     }
+                     //if it doesnt add it to the list
+                    else
+                        inUse.add(schedule);
+                    
                 }
-                //if it does already exist
-                else
-
+               
                 //schedule and start again
                 schd(job.id, schedule.type, schedule.id);
                 readFromStream();
@@ -155,25 +158,32 @@ public class Scheduler{
     public ServerInfo newAlgo(ArrayList<Server> serverType, ArrayList<ServerInfo> inUse, Job job){
         ServerInfo choice = new ServerInfo();
         ListIterator<Server> typeIterator = serverType.listIterator();
+        HashMap<ServerInfo, Float> fitness = new HashMap();
         
         
+        //check to see if an in use server can take job
+        for (ServerInfo current : inUse) {
+            if(canRun(job, current)){
+                //send updated serverinfo for scheduling
+                return updateServerResources(job, current); 
+            }
+        }
 
-        //loop from the end of the list backwards
+        //loop through types of servers from largest to smallest
         while(typeIterator.hasPrevious()){
             Server type = typeIterator.previous();
             //loop through servers of that type
             for(ServerInfo server: getServers(job.cores, job.memory, job.disk)){
-                //check to see if an in use server can take job
-                for (ServerInfo working : inUse) {
-                    if(canRun(job, working)){
-                        return working;
+                    if(server.type == type.type){
+                    //if job does not take up more than half of system resources, schedule
+                    if(resourceRatio(job, server) == true){
+                        return updateServerResources(job, server);
                     }
-                }
+                    //otherwise look for smaller server that is closest to 100%
+                    else{
 
-                //
-                if(server.type == type.type){
-                    
-                   
+                    }
+
                 }
             }
         }
@@ -192,18 +202,32 @@ public class Scheduler{
     }
 
     public boolean canRun(Job job, ServerInfo server){
-        if((Integer.parseInt(server.coreCount) -Integer.parseInt(job.cores) >= 0 && Integer.parseInt(server.memory) -Integer.parseInt(job.memory) >= 0 && Integer.parseInt(server.disk) -Integer.parseInt(job.disk) >= 0))
+        if((Integer.parseInt(server.coreCount) - Integer.parseInt(job.cores) >= 0 && Integer.parseInt(server.memory) - Integer.parseInt(job.memory) >= 0 && Integer.parseInt(server.disk) - Integer.parseInt(job.disk) >= 0))
             return true;
 
         return false;
     }
 
-    public boolean canRun(Job job, ServerInfo server){
-        if((Integer.parseInt(server.coreCount) -Integer.parseInt(job.cores) >= 0 && Integer.parseInt(server.memory) -Integer.parseInt(job.memory) >= 0 && Integer.parseInt(server.disk) -Integer.parseInt(job.disk) >= 0))
-            return true;
-
-        return false;
+    //returns false if job takes up > 50% server rescources schedule
+    public boolean resourceRatio(Job job, ServerInfo server){
+        if((Float.parseFloat(job.cores) / Float.parseFloat(server.coreCount) > 0.5f && Float.parseFloat(job.memory) / Float.parseFloat(server.memory) > 0.5f && Float.parseFloat(job.disk) / Float.parseFloat(server.disk) > 0.5f))
+            return false;
+        
+        return true;
     }
+
+    public Float resourceFitness(Job job, ServerInfo server){
+        Float coreFit = Float.parseFloat(job.cores) / Float.parseFloat(server.coreCount); 
+        Float memFit = Float.parseFloat(job.memory) - Float.parseFloat(server.memory); 
+        Float diskFit = Float.parseFloat(job.disk) - Float.parseFloat(server.disk);
+        
+        Float fitness = coreFit * memFit * diskFit;
+
+        return fitness;
+    }
+
+
+   
 
 
     public void bestFit(ArrayList<Server> servers){
