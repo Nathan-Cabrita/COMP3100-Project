@@ -1,5 +1,6 @@
 import java.net.*;
 import java.util.ArrayList;
+import java.util.ListIterator;
 import java.io.*;
 import Config.*;
 
@@ -119,7 +120,8 @@ public class Scheduler{
     public void runAlgo(ArrayList<Server> serverType){
         String msg = "abcd";
         Job job = null;
-        ArrayList<Server> inUse = new ArrayList<Server>();
+        ArrayList<ServerInfo> inUse = new ArrayList<ServerInfo>();
+        ServerInfo schedule = new ServerInfo();
     
         wakeUp();
         
@@ -127,27 +129,81 @@ public class Scheduler{
             redy();
             msg = readFromStream();
             if(getCommand(msg).equals("JOBN")){
+                //get the job
                 job = getJob(msg);
-                newAlgo(getServers(job.cores, job.memory, job.disk), serverType);
+
+                //find the right server
+                schedule = newAlgo(serverType, inUse, job);
+
+                //check to see if server is already in use if not add it to list
+                //TODO check by server ID not contains
+                for(ServerInfo current: inUse){
+                    if(schedule.id.equals(current.id)){
+                        
+                    }
+                }
+                //if it does already exist
+                else
+
+                //schedule and start again
+                schd(job.id, schedule.type, schedule.id);
+                readFromStream();
             }
         }
     }
     
-    public void newAlgo(ArrayList<ServerInfo> servers, ArrayList<Server> serverType){
-        for(Server type: serverType){
-            for(ServerInfo server: servers){
+    public ServerInfo newAlgo(ArrayList<Server> serverType, ArrayList<ServerInfo> inUse, Job job){
+        ServerInfo choice = new ServerInfo();
+        ListIterator<Server> typeIterator = serverType.listIterator();
+        
+        
+
+        //loop from the end of the list backwards
+        while(typeIterator.hasPrevious()){
+            Server type = typeIterator.previous();
+            //loop through servers of that type
+            for(ServerInfo server: getServers(job.cores, job.memory, job.disk)){
+                //check to see if an in use server can take job
+                for (ServerInfo working : inUse) {
+                    if(canRun(job, working)){
+                        return working;
+                    }
+                }
+
+                //
                 if(server.type == type.type){
                     
+                   
                 }
             }
         }
 
-
-        //shcd
-        //read
+        return choice;
     }
 
+    public ServerInfo updateServerResources(Job job, ServerInfo server){
+        String newCore = Integer.toString((Integer.parseInt(server.coreCount) - Integer.parseInt(job.cores)));
+        String newMem = Integer.toString((Integer.parseInt(server.memory) - Integer.parseInt(job.memory)));
+        String newDisk = Integer.toString((Integer.parseInt(server.disk) - Integer.parseInt(job.disk)));
 
+        ServerInfo newServer = new ServerInfo(server.type, server.id, server.state, server.availableTime, newCore, newMem, newDisk);
+
+        return newServer;
+    }
+
+    public boolean canRun(Job job, ServerInfo server){
+        if((Integer.parseInt(server.coreCount) -Integer.parseInt(job.cores) >= 0 && Integer.parseInt(server.memory) -Integer.parseInt(job.memory) >= 0 && Integer.parseInt(server.disk) -Integer.parseInt(job.disk) >= 0))
+            return true;
+
+        return false;
+    }
+
+    public boolean canRun(Job job, ServerInfo server){
+        if((Integer.parseInt(server.coreCount) -Integer.parseInt(job.cores) >= 0 && Integer.parseInt(server.memory) -Integer.parseInt(job.memory) >= 0 && Integer.parseInt(server.disk) -Integer.parseInt(job.disk) >= 0))
+            return true;
+
+        return false;
+    }
 
 
     public void bestFit(ArrayList<Server> servers){

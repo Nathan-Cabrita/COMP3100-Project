@@ -1,7 +1,7 @@
 import java.net.*;
 import java.util.Iterator;
 import java.io.*;
-import Config.*;
+
 
 public class Client{
         public static void main(String args[]){
@@ -54,12 +54,7 @@ public class Client{
             //comp3100 folder must be in the same folder as ds-sim
             Parser parser = new Parser("ds-sim/system.xml");
 
-            //TODO remove
-            Iterator<Server> iterator = parser.servers.iterator();
-            while(iterator.hasNext()){
-                System.out.println(iterator.next());
-                
-            }
+            
 
             //if run from ide with no command, runs code under last else
             if(method.equals("bf"))
