@@ -116,18 +116,10 @@ public class Scheduler{
         return servers;
     }
 
-
-    public void newAlgo(ArrayList<ServerInfo> servers){
-        
-
-
-        //shcd
-        //read
-    }
-
-    public void runAlgo(){
+    public void runAlgo(ArrayList<Server> serverType){
         String msg = "abcd";
         Job job = null;
+        ArrayList<Server> inUse = new ArrayList<Server>();
     
         wakeUp();
         
@@ -136,10 +128,25 @@ public class Scheduler{
             msg = readFromStream();
             if(getCommand(msg).equals("JOBN")){
                 job = getJob(msg);
-                newAlgo(getServers(job.cores, job.memory, job.disk));
+                newAlgo(getServers(job.cores, job.memory, job.disk), serverType);
             }
         }
     }
+    
+    public void newAlgo(ArrayList<ServerInfo> servers, ArrayList<Server> serverType){
+        for(Server type: serverType){
+            for(ServerInfo server: servers){
+                if(server.type == type.type){
+                    
+                }
+            }
+        }
+
+
+        //shcd
+        //read
+    }
+
 
 
 
