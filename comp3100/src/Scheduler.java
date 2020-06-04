@@ -157,8 +157,8 @@ public class Scheduler{
     
     public ServerInfo newAlgo(ArrayList<Server> serverType, ArrayList<ServerInfo> inUse, Job job){
         ServerInfo choice = new ServerInfo();
-        ListIterator<Server> typeIterator = serverType.listIterator();
-        HashMap<ServerInfo, Float> fitness = new HashMap();
+        ListIterator<Server> typeIterator = serverType.listIterator(serverType.size());
+        HashMap<Float, ServerInfo> fitness = new HashMap();
         
         
         //check to see if an in use server can take job
@@ -174,19 +174,20 @@ public class Scheduler{
             Server type = typeIterator.previous();
             //loop through servers of that type
             for(ServerInfo server: getServers(job.cores, job.memory, job.disk)){
-                    if(server.type == type.type){
+                if(server.type.equals(type.type)){
                     //if job does not take up more than half of system resources, schedule
                     if(resourceRatio(job, server) == true){
                         return updateServerResources(job, server);
                     }
-                    //otherwise look for smaller server that is closest to 100%
+                    //otherwise look for server that is closest to 100%
                     else{
-
+                        fitness.put(resourceFitness(job, server), server);
                     }
-
                 }
             }
         }
+        System.out.println(fitness.toString());
+        
 
         return choice;
     }
