@@ -1,5 +1,6 @@
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.io.*;
@@ -122,6 +123,7 @@ public class Scheduler{
         String msg = "abcd";
         Job job = null;
         ArrayList<ServerInfo> inUse = new ArrayList<ServerInfo>();
+        
         ServerInfo schedule = new ServerInfo();
     
         wakeUp();
@@ -129,43 +131,59 @@ public class Scheduler{
         while(!getCommand(msg).equals("NONE")){
             redy();
             msg = readFromStream();
-            if(getCommand(msg).equals("JOBN")){
+            if(getCommand(msg).equals("JOBN") || getCommand(msg).equals("JOBP")){
                 //get the job
                 job = getJob(msg);
 
-                //find the right server
-                schedule = newAlgo(serverType, inUse, job);
+                //find servers that can run job
+                ArrayList<ServerInfo> servers = getServers(job.cores, job.memory, job.disk);
 
-                
-                for(ServerInfo current: inUse){
-                    //check to see if scheduled server is already in use. if so update it
-                    if(schedule.id.equals(current.id)){
-                        inUse.set(inUse.indexOf(current), schedule);   
-                    }
-                     //if it doesnt add it to the list
-                    else
-                        inUse.add(schedule);
-                    
+                //if no servers are available delay next job
+                if(servers.isEmpty()){
+                    nxtj();
+                    //
                 }
-               
-                //schedule and start again
-                schd(job.id, schedule.type, schedule.id);
+                else{
+                    //find the right server
+                    schedule = newAlgo(serverType, servers, inUse, job);
+                    //used to get the ballrolling
+                    if(inUse.isEmpty())
+                        inUse.add(schedule);
+                    else{
+                        for(int i = 0; i < inUse.size() -1; i++){
+                            //check to see if scheduled server is already in use. if so update it
+                            if(schedule.id.equals(inUse.get(i).id) && i != inUse.size() -1){
+                                inUse.set(i, schedule);
+                                break;
+                            }
+                            else
+                                //if it doesnt add it to the list
+                                inUse.add(schedule);   
+                        }
+                    }
+                    //schedule and start again
+                    schd(job.id, schedule.type, schedule.id);
+                }
                 readFromStream();
             }
+           
         }
     }
     
-    public ServerInfo newAlgo(ArrayList<Server> serverType, ArrayList<ServerInfo> inUse, Job job){
-        ServerInfo choice = new ServerInfo();
-
-        ArrayList<ServerInfo> servers = getServers(job.cores, job.memory, job.disk);
-
-        ListIterator<Server> typeIterator = serverType.listIterator(serverType.size());
-        ListIterator<ServerInfo> serverIterator = servers.listIterator(servers.size());
-
-        HashMap<Float, ServerInfo> fitness = new HashMap();
+    public ServerInfo newAlgo(ArrayList<Server> serverType, ArrayList<ServerInfo> servers, ArrayList<ServerInfo> inUse, Job job){
+        //set dafult to first server
         
+
+      
+
+
+        //check to see if there are available servers otherwise send server requesting new job
         
+        ServerInfo choice = servers.get(0);
+
+        //set choice to first available server
+        
+
         //check to see if an in use server can take job
         for (ServerInfo current : inUse) {
             if(canRun(job, current)){
@@ -175,29 +193,18 @@ public class Scheduler{
         }
 
         //loop through types of servers from largest to smallest
-        while(typeIterator.hasPrevious()){
-            Server type = typeIterator.previous();
+
+        for(Server type: serverType){
             //loop through servers of that type
-            //while(serverIterator.hasPrevious()){
-                //ServerInfo server = serverIterator.previous();
-            for (ServerInfo serverInfo : servers) {
-                
-            }
+            for(ServerInfo server: servers){
                 if(server.type.equals(type.type)){
                     //if job does not take up more than half of system resources, schedule
-                    if(resourceRatio(job, server) == true){
+                    if(resourceRatio(job, server) == true)
                         return updateServerResources(job, server);
-                    }
-                    //otherwise look for server that is closest to 100%
-                    else{
-                        fitness.put(resourceFitness(job, server), server);
-                    }
                 }
             }
         }
-        System.out.println(fitness.toString());
-        
-
+        //otherwise schedule first available server
         return choice;
     }
 
@@ -398,17 +405,19 @@ public class Scheduler{
     //Read socket input from server
     public String readFromStream(){
         byte[] readMsg = new byte[1024];
-        
+        int count = 0;
         try{
             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-            in.read(readMsg);   
+            count = in.read(readMsg);   
         } catch(IOException e){
             System.out.println(e);
         }
         
-        String message = new String(readMsg);
+
+        String message = new String(Arrays.copyOf(readMsg, count));
         return message;
     }
+
 
     //Takes server message from readFromStream() and extracts command part
     public String getCommand(String msg){
@@ -512,6 +521,7 @@ public class Scheduler{
 
     public ServerInfo getServerInfo(String msg){
         String[] splitter = msg.split(" ");
+        splitter[6].replaceAll("[^\\x00-\\x7F]", "");
         ServerInfo server = new ServerInfo(splitter[0], splitter[1], splitter[2], splitter[3], splitter[4], splitter[5], splitter[6]);
         return server;
     }
